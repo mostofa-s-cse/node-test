@@ -10,7 +10,16 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.use("/api", routes);
+app.get("/health", (req, res) => {
+  res.json({
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    nodeVersion: process.version,
+    environment: process.env.NODE_ENV,
+  });
+});
+app.use("/api/v1", routes);
 
 app.use(notFound);
 app.use(errorHandler);
