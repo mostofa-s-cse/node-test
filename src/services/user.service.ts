@@ -1,31 +1,46 @@
-import { PrismaClient } from "@prisma/client";
-import { AppError } from "../utils/appError";
+import { NotFoundError } from "../utils/appError";
+import { IUserRepository } from "../repositories/user.repository";
+import { getContainer } from "../container";
 
-const prisma = new PrismaClient();
+export class UserService {
+  private userRepository: IUserRepository;
 
-export const getMeService = async (userId: string) => {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new AppError("User not found", 404);
-  return user;
-};
+  constructor() {
+    this.userRepository = getContainer().userRepository;
+  }
 
-export const getAllUsersService = async () => {
-  return prisma.user.findMany();
-};
+  async getMe(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return user;
+  }
 
-export const deleteUserService = async (id: string) => {
-  const user = await prisma.user.findUnique({ where: { id } });
-  if (!user) throw new AppError("User not found", 404);
-  return prisma.user.delete({ where: { id } });
-};
+  async getAllUsers() {
+    return this.userRepository.findAll();
+  }
 
-export const searchUserService = async (query: string) => {
-  return prisma.user.findMany({
-    where: {
-      OR: [
-        { name: { contains: query, mode: "insensitive" } },
-        { email: { contains: query, mode: "insensitive" } },
-      ],
-    },
-  });
-};
+  async deleteUser(id: string) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return this.userRepository.delete(id);
+  }
+
+  async searchUsers(query: string) {
+    return this.userRepository.search(query);
+  }
+
+  async updateUser(id: string, data: { name?: string; email?: string }) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return this.userRepository.update(id, data);
+  }
+}
+
+// Export singleton instance
+export const userService = new UserService();

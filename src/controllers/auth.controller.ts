@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import * as authService from "../services/auth.service";
+import { sendSuccessResponse } from "../utils/errorResponse";
+import { authService } from "../services/auth.service";
+import { ERROR_CODES } from "../constants";
 
 export const register = async (
   req: Request,
@@ -9,7 +11,14 @@ export const register = async (
   try {
     const { name, email, password } = req.body;
     const user = await authService.registerUser(name, email, password);
-    res.status(201).json({ user });
+    
+    sendSuccessResponse(
+      res, 
+      { user }, 
+      201, 
+      "User registered successfully",
+      req.headers['x-request-id'] as string
+    );
   } catch (err) {
     next(err);
   }
@@ -26,7 +35,14 @@ export const login = async (
       email,
       password
     );
-    res.json({ user, accessToken, refreshToken });
+    
+    sendSuccessResponse(
+      res, 
+      { user, accessToken, refreshToken }, 
+      200, 
+      "Login successful",
+      req.headers['x-request-id'] as string
+    );
   } catch (err) {
     next(err);
   }
@@ -40,13 +56,27 @@ export const refresh = async (
   try {
     const { refreshToken } = req.body;
     const data = await authService.refreshUserToken(refreshToken);
-    res.json(data);
+    
+    sendSuccessResponse(
+      res, 
+      data, 
+      200, 
+      "Token refreshed successfully",
+      req.headers['x-request-id'] as string
+    );
   } catch (err) {
     next(err);
   }
 };
 
-export const logout = (_req: Request, res: Response) => {
+export const logout = (req: Request, res: Response) => {
   const result = authService.logoutUser();
-  res.json(result);
+  
+  sendSuccessResponse(
+    res, 
+    result, 
+    200, 
+    "Logout successful",
+    req.headers['x-request-id'] as string
+  );
 };
