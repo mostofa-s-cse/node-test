@@ -1,32 +1,35 @@
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../types/express";
 import {
   getAllUsersService,
-  getMeService,
   deleteUserService,
   searchUserService,
+  getUserByIdService,
+  updateUserService,
 } from "../services/user.service";
-
-export const getMe = async (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "User not authenticated" });
-  }
-  const user = await getMeService(req.user.id);
-  res.json({ user });
-};
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await getAllUsersService();
-  res.json({ users });
+  res.json({ success: true, message: "All users retrieved successfully", users });
 };
+
+export const getUserById = async (req: Request, res: Response) => {
+  const user = await getUserByIdService(req.params.id);
+  res.json({ success: true, message: "User retrieved successfully", user });
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  const user = await updateUserService(req.params.id, req.body);
+  res.json({ success: true, message: "User updated successfully", user });
+};
+
 
 export const deleteUser = async (req: Request, res: Response) => {
   await deleteUserService(req.params.id);
-  res.json({ message: "User deleted" });
+  res.json({ success: true, message: "User deleted successfully" });
 };
 
 export const searchUsers = async (req: Request, res: Response) => {
   const { q } = req.query;
   const users = await searchUserService(q as string);
-  res.json({ users });
+  res.json({ success: true, message: "Users search completed", users });
 };

@@ -6,14 +6,31 @@ import {
   verifyRefreshToken,
 } from "../utils/jwt";
 import { AppError } from "../utils/appError";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
+
+const registerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 export const registerUser = async (
   name: string,
   email: string,
   password: string
 ) => {
+  const parsed = registerSchema.safeParse({ name, email, password });
+  if (!parsed.success) {
+    throw new AppError(parsed.error.issues[0].message, 400);
+  }
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new AppError("Email already registered", 400);
 
@@ -26,6 +43,11 @@ export const registerUser = async (
 };
 
 export const loginUser = async (email: string, password: string) => {
+  const parsed = loginSchema.safeParse({ email, password });
+  if (!parsed.success) {
+    throw new AppError(parsed.error.issues[0].message, 400);
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError("User not found", 404);
 
@@ -52,7 +74,11 @@ export const refreshUserToken = async (token: string) => {
   }
 };
 
-export const logoutUser = () => {
-  // In production, you'd handle token blacklist here
-  return { message: "Logged out successfully (client should delete tokens)" };
+export const getAuthUserService = async (id: string) => {
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) throw new AppError("User not found", 404);
+  return user;
 };
+
+
+

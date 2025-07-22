@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as authService from "../services/auth.service";
+import { AuthenticatedRequest } from "../types/express";
 
 export const register = async (
   req: Request,
@@ -9,7 +10,7 @@ export const register = async (
   try {
     const { name, email, password } = req.body;
     const user = await authService.registerUser(name, email, password);
-    res.status(201).json({ user });
+    res.status(201).json({ success: true, message: "User registered successfully", user });
   } catch (err) {
     next(err);
   }
@@ -26,27 +27,21 @@ export const login = async (
       email,
       password
     );
-    res.json({ user, accessToken, refreshToken });
+    res.json({ success: true, message: "Login successful", user, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
 };
 
-export const refresh = async (
-  req: Request,
+export const getAuthUser = async (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const { refreshToken } = req.body;
-    const data = await authService.refreshUserToken(refreshToken);
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
+  const user = await authService.getAuthUserService(req.user?.id as string);
+  res.json({ success: true, message: "Authenticated user profile retrieved", user });
 };
 
-export const logout = (_req: Request, res: Response) => {
-  const result = authService.logoutUser();
-  res.json(result);
-};
+
+
+

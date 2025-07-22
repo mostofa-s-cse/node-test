@@ -1,11 +1,16 @@
 {
   "name": "bs23",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "generate-secret": "ts-node src/utils/generate-secret.ts"
+    "generate-secret": "ts-node src/utils/generate-secret.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "prisma:reset": "prisma migrate reset",
+    "prisma:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +25,8 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

@@ -3,14 +3,20 @@ import { AppError } from "../utils/appError";
 
 const prisma = new PrismaClient();
 
-export const getMeService = async (userId: string) => {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+export const getAllUsersService = async () => {
+  return prisma.user.findMany();
+};
+
+export const getUserByIdService = async (id: string) => {
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user) throw new AppError("User not found", 404);
   return user;
 };
 
-export const getAllUsersService = async () => {
-  return prisma.user.findMany();
+export const updateUserService = async (id: string, data: any) => {
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) throw new AppError("User not found", 404);
+  return prisma.user.update({ where: { id }, data });
 };
 
 export const deleteUserService = async (id: string) => {
